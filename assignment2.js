@@ -6,63 +6,79 @@ let plainText = `Hi David Headline: Energix Closes $520 Million Financing and Ta
 
 let plainTextPositions = [
   {
-      start: 241,
-      end: 247,
+    start: 241,
+    end: 247,
   },
   {
-      start: 518,
-      end: 525,
+    start: 518,
+    end: 525,
   },
-]
-String.prototype.replaceAt = function(index, replacement, wordLen) {
-  return this.substring(0, index) + replacement + this.substring(index + wordLen);
-}
+];
 
+// replaceAt function will return the updated htmlContent by adding given string (aka replacement)
+String.prototype.replaceAt = function (index, replacement, wordLen) {
+  return (
+    this.substring(0, index) + replacement + this.substring(index + wordLen)
+  );
+};
+
+//highlightHTMLContent function which will return the expected output
 const highlightHTMLContent = (htmlContent, plainText, plainTextPositions) => {
+  let filteredIndex; /* filteredIndex variable used to store the specific occurence of the word in the plainText as per the plainTextPositions */
 
-  let filteredIndex;
+  /* This map method on the plainTextPositions returns an object with words and its occurences in painText */
   let words = plainTextPositions.map((wordPositions) => {
-   
     let { start, end } = wordPositions;
-    let word = plainText.slice(start, end); 
+    let word = plainText.slice(start, end);
     let index = plainText.indexOf(word);
 
+    // To store all occurences of the given word in plainText
     let occurences = [];
-    while(index != -1){
-      occurences = [...occurences,index];        
-      index = plainText.indexOf(`${word}`,index+1)
+
+    //Adding all occurences of the word in plainText into "occurence" array
+    while (index != -1) {
+      occurences = [...occurences, index];
+      index = plainText.indexOf(`${word}`, index + 1);
     }
 
-    occurences.find((wordOccurence, index)=> {
-      if(wordOccurence === start){
+    /*To find the partcicular occurence of word in plainText wrt plainTextPositions*/
+    occurences.find((wordOccurence, index) => {
+      if (wordOccurence === start) {
         filteredIndex = index;
-      }      
-    })
-    
+      }
+    });
+
     return {
       word,
-      filteredIndex
-    }
-
+      filteredIndex,
+    };
   });
 
-  console.log(words,'words details from plain text');
+  console.log(words, "words details from plain text");
 
-  words.map((wordObj)=>{
-    console.log('wordObj from plain text:',wordObj);
+  words.map((wordObj) => {
+    console.log("wordObj from plain text:", wordObj);
 
-    let regex = new RegExp(`${wordObj.word}`, "ig");
-    let htmlWordObj = htmlContent.matchAll(regex);
-    let wordsArray = Array.from(htmlWordObj);
-    let matchedWordObj = wordsArray[wordObj.filteredIndex];
+    let regex = new RegExp(`${wordObj.word}`,"ig"); /*creating a regular expression of the word with case sensitive and global parameters*/
 
-    console.log('matched words in html: ',matchedWordObj)
+    let htmlWordObj = htmlContent.matchAll(regex); /* retreive all matching words (objects) in htmlContent */
+
+    let wordsArray = Array.from(htmlWordObj); /* gives an array of matched words (objects) */
+
+    let matchedWordObj = wordsArray[ wordObj.filteredIndex]; 
+    //extract and stores a specific word object wrt plainTextPositions
+
+    console.log("matched words in html: ", matchedWordObj);
 
     let matchedIndex = matchedWordObj.index;
     let matchedWord = matchedWordObj[0];
-    htmlContent = htmlContent.replaceAt(matchedIndex,`<mark>${matchedWord}</mark>`,matchedWord.length);
 
-  })
+    htmlContent = htmlContent.replaceAt(
+      matchedIndex,
+      `<mark>${matchedWord}</mark>`,
+      matchedWord.length
+    ); // returns updated htmlContent
+  });
   return htmlContent;
 };
 
@@ -71,5 +87,3 @@ body.innerHTML = highlightHTMLContent(
   plainText,
   plainTextPositions
 );
-
-console.log(body.innerHTML);
